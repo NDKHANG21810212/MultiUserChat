@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUTICHAT UI - Đăng nhập</title>
+</head>
+<body style="text-align:center; margin-top: 100px;">
+    <h2>MUTICHAT UI</h2>
+    <p>Nhập tên người dùng:</p>
+    <input type="text" id="username" placeholder="Tên người dùng">
+    <button onclick="joinChat()">Vào phòng chat</button>
+
+    <script>
+        function joinChat() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) return alert('Vui lòng nhập tên!');
+            localStorage.setItem('username', username);
+            window.location.href = 'rooms.html';
+        }
+    </script>
+</body>
+</html>

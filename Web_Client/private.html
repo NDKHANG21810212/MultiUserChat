@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Riêng</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background-color: #28a745;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+    }
+    main {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+    }
+    footer {
+      display: flex;
+      padding: 10px;
+      background-color: #eee;
+    }
+    textarea {
+      flex: 1;
+      resize: none;
+      height: 50px;
+      margin-right: 10px;
+    }
+    button {
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <header id="header-title">Chat riêng</header>
+
+  <main id="chat-box">
+    <p><strong>Bạn:</strong> Chào nhé!</p>
+    <p><strong>Người kia:</strong> Ừ, nói chuyện riêng ở đây.</p>
+  </main>
+
+  <footer>
+    <textarea id="msgInput" placeholder="Nhập tin nhắn..."></textarea>
+    <button>Gửi</button>
+  </footer>
+
+  <script>
+    // Lấy thông tin từ URL
+    const params = new URLSearchParams(window.location.search);
+    const fromUser = params.get("from") || "Bạn";
+    const toUser = params.get("to") || "Người kia";
+
+    document.getElementById("header-title").innerText = `Chat với ${toUser}`;
+  </script>
+</body>
+</html>

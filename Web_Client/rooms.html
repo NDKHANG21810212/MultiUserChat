@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách phòng</title>
+</head>
+<body style="text-align:center; margin-top:50px;">
+    <h3>Xin chào, <span id="user"></span></h3>
+    <h4>DANH SÁCH PHÒNG CHAT</h4>
+
+    <div id="roomList">
+        <p><a href="community.html">Phòng chat: Cộng đồng</a></p>
+        <p><a href="private.html">Phòng chat riêng (Demo)</a></p>
+    </div>
+
+    <button onclick="createRoom()">Tạo phòng mới</button>
+
+    <script>
+        document.getElementById('user').textContent = localStorage.getItem('username') || 'Khách';
+        function createRoom() {
+            alert('Tính năng tạo phòng mới sẽ thêm sau.');
+        }
+    </script>
+</body>
+</html>
