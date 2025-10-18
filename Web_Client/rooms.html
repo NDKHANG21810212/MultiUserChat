@@ -1,26 +1,349 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách phòng</title>
-</head>
-<body style="text-align:center; margin-top:50px;">
-    <h3>Xin chào, <span id="user"></span></h3>
-    <h4>DANH SÁCH PHÒNG CHAT</h4>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phòng Chat Cộng Đồng</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #f0f2f5;
+    }
+    
+    /* === SỬA HEADER VÀ NÚT THOÁT === */
+    header {
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      font-size: 1.2em;
+      
+      /* Thêm Flexbox để căn chỉnh */
+      display: flex;
+      justify-content: space-between; /* Đẩy 2 mục ra 2 bên */
+      align-items: center; /* Căn giữa theo chiều dọc */
+      padding: 10px 20px; 
+    }
 
-    <div id="roomList">
-        <p><a href="community.html">Phòng chat: Cộng đồng</a></p>
-        <p><a href="private.html">Phòng chat riêng (Demo)</a></p>
+    #exit-btn {
+      background-color: #dc3545; /* Màu đỏ */
+      color: white;
+      border: none;
+      
+      padding: 5px 8px; /* Kích thước nhỏ */
+      font-size: 0.9em;   /* Chữ nhỏ */
+
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #exit-btn:hover {
+      background-color: #c82333;
+    }
+    /* === HẾT PHẦN SỬA === */
+
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden; /* Ngăn scroll ở main */
+    }
+    #chat-container {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #ccc;
+    }
+    #chat-box {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background-color: #ffffff;
+    }
+    #user-list-container {
+      flex: 1;
+      padding: 10px;
+      background-color: #f8f8f8;
+      border-left: 1px solid #ccc;
+      overflow-y: auto;
+    }
+    footer {
+      display: flex;
+      padding: 10px;
+      background-color: #eee;
+      border-top: 1px solid #ccc;
+    }
+    #msgInput {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 10px;
+      font-size: 1em;
+    }
+    #send-btn {
+      width: 100px;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    #send-btn:hover {
+      background-color: #0056b3;
+    }
+    
+    /* === Các kiểu tin nhắn === */
+    .msg-item { margin-bottom: 8px; }
+    .msg-system {
+      color: gray;
+      font-style: italic;
+      text-align: center;
+      font-size: 0.9em;
+    }
+    .msg-mine {
+      text-align: right;
+      color: #0056b3;
+    }
+    .msg-other {
+      text-align: left;
+    }
+    .msg-private {
+      background-color: #fffbe6;
+      color: #5d4c0c;
+      border-left: 3px solid #ffd666;
+      padding: 5px 10px;
+      border-radius: 3px;
+    }
+    .username { font-weight: bold; }
+    
+    /* === Danh sách User === */
+    #user-list-container h3 {
+        margin-top: 0;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+    }
+    .user-item {
+        display: block;
+        margin: 5px 0;
+        color: #333;
+        font-weight: bold;
+    }
+    .user-item::before {
+        content: "🟢"; /* Chấm xanh online */
+        font-size: 0.7em;
+        margin-right: 8px;
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <span>Phòng Chat Cộng Đồng</span>
+    <button id="exit-btn">Thoát ➔</button>
+  </header>
+
+  <main>
+    <div id="chat-container">
+      <div id="chat-box">
+        </div>
     </div>
 
-    <button onclick="createRoom()">Tạo phòng mới</button>
+    <div id="user-list-container">
+      <h3>Đang online (0)</h3>
+      <div id="user-list">
+        </div>
+    </div>
+  </main>
 
-    <script>
-        document.getElementById('user').textContent = localStorage.getItem('username') || 'Khách';
-        function createRoom() {
-            alert('Tính năng tạo phòng mới sẽ thêm sau.');
+  <footer>
+    <input id="msgInput" placeholder="Nhập tin nhắn... (dùng @TênUser để chat riêng)" />
+    <button id="send-btn">Gửi</button>
+  </footer>
+
+  <script>
+    // 1. LẤY USERNAME VÀ KIỂM TRA
+    const username = localStorage.getItem("username");
+    if (!username) {
+      alert("Bạn chưa đăng nhập!");
+      window.location.href = "index.html"; // Quay về trang đăng nhập
+    }
+
+    // 2. LẤY CÁC THÀNH PHẦN GIAO DIỆN
+    const chatBox = document.getElementById("chat-box");
+    const userListDiv = document.getElementById("user-list");
+    const userListHeader = document.querySelector("#user-list-container h3");
+    const msgInput = document.getElementById("msgInput");
+    const sendBtn = document.getElementById("send-btn");
+    const exitBtn = document.getElementById("exit-btn"); // Thêm nút Thoát
+
+    // 3. KẾT NỐI WEBSOCKET
+    // !!! QUAN TRỌNG: Thay đổi IP nếu bạn test LAN
+    // const ws_ip = "192.168.1.10"; // Ví dụ Test LAN (IP máy thật)
+    const ws_ip = "127.0.0.1"; // Test ở máy (localhost)
+    
+    // Đảm bảo bạn đã sửa HOST = '0.0.0.0' trong server.py và gateway.py
+    // và mở Firewall port 12345, 8765 nếu test LAN
+    
+    const ws = new WebSocket(`ws://${ws_ip}:8765`); // Kết nối tới Gateway
+
+    // 4. CÁC HÀM HỖ TRỢ
+    
+    /** Hiển thị tin nhắn lên chat box */
+    function displayMessage(message, type) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `msg-item ${type}`; // Gán class CSS
+      msgDiv.innerHTML = message; // Dùng innerHTML để nhận diện <br> và <strong>
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight; // Tự cuộn xuống cuối
+    }
+
+    /** Cập nhật danh sách user online */
+    function updateUserList(users) {
+      userListHeader.innerText = `Đang online (${users.length})`;
+      userListDiv.innerHTML = ""; // Xóa danh sách cũ
+      users.forEach((user) => {
+        const userDiv = document.createElement("div");
+        userDiv.className = "user-item";
+        userDiv.innerText = user;
+        
+        userDiv.style.cursor = "pointer";
+        userDiv.title = `Click để chat riêng với ${user}`;
+        userDiv.onclick = () => {
+            msgInput.value = `@${user} `;
+            msgInput.focus();
+        };
+        
+        userListDiv.appendChild(userDiv);
+      });
+    }
+
+    // 5. XỬ LÝ SỰ KIỆN WEBSOCKET
+    
+    /** Khi mở kết nối, gửi tin "join" */
+    ws.onopen = () => {
+      displayMessage("Đã kết nối tới server...", "msg-system");
+      const joinPkg = {
+        type: "join",
+        sender: username,
+      };
+      ws.send(JSON.stringify(joinPkg));
+    };
+
+    /** Khi đóng kết nối */
+    ws.onclose = () => {
+      displayMessage("Đã mất kết nối tới server.", "msg-system");
+      userListHeader.innerText = "Đã ngắt kết nối";
+    };
+
+    /** Khi có lỗi */
+    ws.onerror = (error) => {
+      displayMessage("Lỗi kết nối. Hãy F5 trang.", "msg-system");
+      console.error("Lỗi WebSocket:", error);
+    };
+
+    /** KHI NHẬN ĐƯỢC TIN NHẮN TỪ SERVER (qua Gateway) */
+    ws.onmessage = (event) => {
+      try {
+        const pkg = JSON.parse(event.data);
+        const sender = pkg.sender || "Server";
+        const message = pkg.message || "";
+
+        switch (pkg.type) {
+          case "message": // Tin nhắn chung
+            if (sender === username) {
+              displayMessage(`<span class="username">Bạn:</span> ${message}`, "msg-mine");
+            } else {
+              displayMessage(`<span class="username">${sender}:</span> ${message}`, "msg-other");
+            }
+            break;
+            
+          case "private": // Tin nhắn RIÊNG nhận được
+            displayMessage(
+              `<span class="username">[PM từ ${sender}]:</span> ${message}`,
+              "msg-private"
+            );
+            break;
+
+          case "private_sent": // Xác nhận tin riêng ĐÃ GỬI
+            displayMessage(
+              `<span class="username">[PM đã gửi đến ${pkg.to_user}]:</span> ${message}`,
+              "msg-private"
+            );
+            break;
+
+          case "user_list": // Cập nhật danh sách user
+            updateUserList(pkg.users || []);
+            break;
+            
+          case "info": // Thông báo từ server (join/leave)
+          case "error": // Lỗi từ server (user not found)
+            displayMessage(`[${sender}]: ${message}`, "msg-system");
+            break;
+
+          default:
+            console.log("Nhận được gói tin lạ:", pkg);
         }
-    </script>
+      } catch (e) {
+        console.error("Lỗi parse JSON:", e, event.data);
+      }
+    };
+
+    // 6. XỬ LÝ GỬI TIN
+    function sendMessage() {
+      const msg = msgInput.value.trim();
+      if (!msg) return; // Không gửi tin rỗng
+
+      const msgPkg = {
+        type: "message",
+        sender: username,
+        message: msg,
+      };
+      ws.send(JSON.stringify(msgPkg));
+      
+      // Nếu là tin nhắn của mình (KHÔNG phải @), server.py sẽ broadcast lại
+      // Nếu là tin @, server.py sẽ gửi type "private_sent"
+      // Nên chúng ta không cần tự hiển thị ở đây.
+      
+      msgInput.value = ""; // Xóa input
+      msgInput.focus();
+    }
+
+    sendBtn.onclick = sendMessage;
+    msgInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+
+    // 7. XỬ LÝ THOÁT (Thêm mới)
+    /** Hàm xử lý thoát chat */
+    function exitChat() {
+      if (!confirm("Bạn có chắc chắn muốn rời phòng chat?")) {
+        return;
+      }
+
+      const exitPkg = {
+        type: "exit", //
+        sender: username
+      };
+      ws.send(JSON.stringify(exitPkg));
+      ws.close();
+      localStorage.removeItem("username");
+      displayMessage("Bạn đã thoát. Đang chuyển hướng...", "msg-system");
+
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1500); 
+    }
+    
+    exitBtn.onclick = exitChat;
+
+  </script>
 </body>
 </html>
