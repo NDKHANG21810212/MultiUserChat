@@ -191,7 +191,7 @@ def start_tcp_server():
                 # di chuyển ra vòng lặp ngoài
                 except (ConnectionResetError, ConnectionAbortedError):
                     print(f"Client {username} đã ngắt kết nối.")
-                    if package.get("type") != "exit": # Nếu không phải thoát chủ động
+                    if 'package' not in locals() or package.get("type") != "exit": # Nếu không phải thoát chủ động
                         broadcast(f"Client {username} mất kết nối đột ngột", sender_addr="Server")
                     break # Thoát vòng lặp while True
                 except OSError as e:
